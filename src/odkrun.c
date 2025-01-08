@@ -65,6 +65,9 @@ Start a ODK container.\n");
     -h, --help          Display this help message.\n\
     -v, --version       Display the version message.\n\
     -d, --debug         Print debug informations.\n\
+        --assume-odk-repository\n\
+                        Assume the current directory is the src/ontology\n\
+                        directory of a ODK-managed repository.\n\
 ");
 
     puts("Image options:\n\
@@ -269,11 +272,11 @@ is_odk_repository(const char *directory)
 
 /* Sets and binds the ODK working directory. */
 static void
-set_work_directory(odk_run_config_t *cfg)
+set_work_directory(odk_run_config_t *cfg, int force)
 {
     char *cwd = ".";
 
-    if ( is_odk_repository(cwd) ) {
+    if ( force || is_odk_repository(cwd) ) {
         cwd = "../..";
         cfg->work_directory = "/work/src/ontology";
         cfg->flags |= ODK_FLAG_INODKREPO;
@@ -400,7 +403,7 @@ int
 main(int argc, char **argv)
 {
     int c;
-    int ret = 0;
+    int ret = 0, in_odk_repo = 0;
     char *opt_value, *java_mem = NULL;
     odk_run_config_t cfg;
     odk_backend_t backend = { 0 };
@@ -422,6 +425,7 @@ main(int argc, char **argv)
         { "root",           0, NULL, 256 },
         { "owlapi-option",  1, NULL, 257 },
         { "java-property",  1, NULL, 258 },
+        { "assume-odk-repository", 0, NULL, 259 },
         { NULL,             0, NULL, 0 }
     };
 
@@ -498,6 +502,10 @@ main(int argc, char **argv)
         case 257:
             handle_owlapi_option(&cfg, optarg);
             break;
+
+        case 259:
+            in_odk_repo = 1;
+            break;
         }
     }
 
@@ -515,7 +523,7 @@ main(int argc, char **argv)
         err(EXIT_FAILURE, "Cannot initialise backend");
 
     set_max_java_mem(&cfg, backend.info.total_memory, java_mem);
-    set_work_directory(&cfg);
+    set_work_directory(&cfg, in_odk_repo);
     set_github_token(&cfg);
     set_http_proxy(&cfg);
 
