@@ -67,8 +67,11 @@ is experimental but should mostly work.
 .TP
 .BR -n ", " --native
 Run in the native system rather than in a container. This is
-VERY experimental and likely not to work. This assumes that
-all tools of the ODK are somehow available in the system PATH.
+VERY experimental. This assumes that there is a directory named
+\fI$XDG_DATA_HOME/ontology-development-kit/images/IMAGE\fR
+(where \fIIMAGE\fR is the value of the \fI--image\fR option)
+containing an ODK environment as created by the \fIcreate\fR
+command of the new \fIodkcore\fR project.
 .TP
 .BR --root
 Run as a superuser within the container.

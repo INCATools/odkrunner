@@ -34,12 +34,33 @@
 
 #include "backend-native.h"
 
+#include <memreg.h>
 #include <xmem.h>
 
 #include "procutil.h"
 #include "util.h"
 
+#define IMAGES_PATH "ontology-development-kit/images"
+
 #if !defined(ODK_RUNNER_WINDOWS)
+
+static int
+prepare(odk_backend_t *backend, odk_run_config_t *cfg)
+{
+    char imagesdir[2048];
+    char *path, *resourcesdir;
+
+    if ( get_data_directory(imagesdir, sizeof(imagesdir), IMAGES_PATH) == -1 )
+        return -1;
+
+    path = mr_sprintf(NULL, "%s/%s/bin:%s", imagesdir, cfg->image_name, getenv("PATH"));
+    resourcesdir = mr_sprintf(NULL, "%s/%s/resources", imagesdir, cfg->image_name);
+
+    odk_add_env_var(cfg, "PATH", path, 0);
+    odk_add_env_var(cfg, "ODK_RESOURCES_DIR", resourcesdir, 0);
+
+    return 0;
+}
 
 static int
 run(odk_backend_t *backend, odk_run_config_t *cfg, char **command)
@@ -78,7 +99,7 @@ run(odk_backend_t *backend, odk_run_config_t *cfg, char **command)
             argv[i++] = "### DEBUG STATS ###\nElapsed time: %E\nPeak memory: %M kb";
         }
         if ( cfg->flags & ODK_FLAG_SEEDMODE ) {
-            argv[i++] = "odk.py";   /* We assume the odk.py script is in PATH */
+            argv[i++] = "odk";   /* We assume the odk script is in PATH */
             argv[i++] = "seed";
         }
         for ( cursor = &command[0]; *cursor; cursor++ )
@@ -111,7 +132,7 @@ odk_backend_native_init(odk_backend_t *backend)
     errno = ENOSYS;
     return -1;
 #else
-    backend->prepare = NULL;
+    backend->prepare = prepare;
     backend->run = run;
     backend->close = close;
 
