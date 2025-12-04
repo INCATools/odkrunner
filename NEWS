@@ -1,3 +1,12 @@
+Changes in odkrunner 0.4.0 (2025-12-04)
+---------------------------------------
+
+    * Allow the use of native ODK environments as created by the
+      `odk install` command of the new ODK-Core project.
+    * Add the `--assumed-odk-repository` option.
+    * Fix incorrect detection of OAKLib's cache directory.
+
+
 Changes in odkrunner 0.3.0 (2024-10-24)
 ---------------------------------------
 

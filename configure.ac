@@ -1,4 +1,4 @@
-AC_INIT([ODK Runner], [0.3.0],
+AC_INIT([ODK Runner], [0.4.0],
         [dgouttegattat@incenp.org], [odkrun])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
