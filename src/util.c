@@ -285,8 +285,10 @@ get_data_directory(char *buffer, size_t len, const char *name)
 
 #endif
 
-    if ( ret == len )
+    if ( ret >= len ) {
         errno = ENAMETOOLONG;
+        ret = -1;
+    }
     else if ( ret == -1 )
         errno = ENOENT;
 
