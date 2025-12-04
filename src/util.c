@@ -248,3 +248,47 @@ read_line_from_pipe(const char *command)
 
     return line;
 }
+
+/**
+ * Gets the path to the per-user data directory for the specified
+ * application name.
+ *
+ * @param buffer The buffer to store the path into.
+ * @param len    The size of the buffer.
+ * @param name   The name of the application for which the data
+ *               directory is requested.
+ *
+ * @return The length of the path written into the buffer. May return
+ *         -1 if we were not able to obtain the directory (errno is
+ *         set to ENOENT), or if the provided buffer is too small
+ *         (errno is set to ENAMETOOLONG).
+ */
+int
+get_data_directory(char *buffer, size_t len, const char *name)
+{
+    int ret = -1;
+    char *dir;
+
+#if defined(ODK_RUNNER_LINUX)
+    if ( (dir = getenv("XDG_DATA_HOME")) )
+        ret = snprintf(buffer, len, "%s/%s", dir, name);
+    else if ( (dir = getenv("HOME")) )
+        ret = snprintf(buffer, len, "%s/.local/share/%s", dir, name);
+
+#elif defined(ODK_RUNNER_MACOS)
+    if ( (dir = getenv("HOME")) )
+        ret = snprintf(buffer, len, "%s/Library/Application Support/%s", dir, name);
+
+#elif defined(ODK_RUNNER_WINDOWS)
+    if ( (dir = getenv("LOCALAPPDATA")) )
+        ret = snprintf(buffer, len, "%s/%s", dir, name);
+
+#endif
+
+    if ( ret == len )
+        errno = ENAMETOOLONG;
+    else if ( ret == -1 )
+        errno = ENOENT;
+
+    return ret;
+}

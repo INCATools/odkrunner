@@ -56,6 +56,9 @@ read_file(const char *, size_t *, size_t);
 char *
 read_line_from_pipe(const char *);
 
+int
+get_data_directory(char *, size_t, const char *);
+
 #ifdef __cplusplus
 }
 #endif

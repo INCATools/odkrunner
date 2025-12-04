@@ -40,6 +40,7 @@
 #include <errno.h>
 
 #include "runner.h"
+#include "util.h"
 
 #define OAKLIB_NAME "oaklib"
 #define USER_CACHEDIR "/home/odkuser/.data/oaklib"
@@ -94,20 +95,9 @@ get_oaklib_cache_directory(char *buffer, size_t len)
         if ( (dir = getenv("PYSTOW_HOME")) )
             ret = snprintf(buffer, len, "%s/" OAKLIB_NAME, dir);
         else {
-            if ( (use_appdirs = getenv("PYSTOW_USE_APPDIRS")) && strcasecmp(use_appdirs, "true") == 0 ) {
-#if defined(ODK_RUNNER_WINDOWS)
-                if ( (dir = getenv("LOCALAPPDATA")) )
-                    ret = snprintf(buffer, len, "%s/" OAKLIB_NAME, dir);
-#elif defined(ODK_RUNNER_MACOS)
-                if ( (dir = getenv("HOME")) )
-                    ret = snprintf(buffer, len, "%s/Library/Application Support/" OAKLIB_NAME, dir);
-#else
-                if ( (dir = getenv("XDG_DATA_DIR")) )
-                    ret = snprintf(buffer, len, "%s/" OAKLIB_NAME, dir);
-                else if ( (dir = getenv("HOME")) )
-                    ret = snprintf(buffer, len, "%s/.local/share/" OAKLIB_NAME, dir);
-#endif
-            } else {    /* No PYSTOW_USE_APPDIRS */
+            if ( (use_appdirs = getenv("PYSTOW_USE_APPDIRS")) && strcasecmp(use_appdirs, "true") == 0 )
+                ret = get_data_directory(buffer, len, OAKLIB_NAME);
+            else {    /* No PYSTOW_USE_APPDIRS */
                 if ( ! (pystow_name = getenv("PYSTOW_NAME")) )
                     pystow_name = ".data";
 
