@@ -47,14 +47,14 @@
 static int
 prepare(odk_backend_t *backend, odk_run_config_t *cfg)
 {
-    char imagesdir[2048];
-    char *path, *resourcesdir;
+    char *imagesdir, *path, *resourcesdir;
 
-    if ( get_data_directory(imagesdir, sizeof(imagesdir), IMAGES_PATH) == -1 )
+    if ( ! (imagesdir = get_user_path(ODK_USERDIR_ENVS, IMAGES_PATH)) )
         return -1;
 
     path = mr_sprintf(NULL, "%s/%s/bin:%s", imagesdir, cfg->image_name, getenv("PATH"));
     resourcesdir = mr_sprintf(NULL, "%s/%s/resources", imagesdir, cfg->image_name);
+    free(imagesdir);
 
     odk_add_env_var(cfg, "PATH", path, 0);
     odk_add_env_var(cfg, "ODK_RESOURCES_DIR", resourcesdir, 0);

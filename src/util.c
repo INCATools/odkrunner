@@ -250,13 +250,53 @@ read_line_from_pipe(const char *command)
 }
 
 /**
- * Gets the path to the per-user data directory for the specified
- * application name.
+ * Gets the path to a file or directory under the per-user directory.
  *
- * @param buffer The buffer to store the path into.
- * @param len    The size of the buffer.
- * @param name   The name of the application for which the data
- *               directory is requested.
+ * For example, under GNU/Linux, asking for "odk/file" under the
+ * per-user directory for configuration files would return the full
+ * path pointed to by "$XDG_CONFIG_HOME/odk/file".
+ *
+ * The function does _not_ check that the returned path points to an
+ * existing file or directory.
+ *
+ * @param odk_userdir_type The type or per-user directory required.
+ * @param path             The requested path.
+ *
+ * @param A newly allocated buffer containing the full path, or NULL
+ *        if we could not get the path because the required environment
+ *        variables are not set.
+ */
+char *
+get_user_path(enum odk_userdir_type type, const char *path)
+{
+    char *ret = NULL;
+    char *dir;
+
+    switch ( type ) {
+#define ODK_USERDIR(dname, primary_var, fallback_var, fallback_path)    \
+    case ODK_USERDIR_##dname:                                           \
+        if ( primary_var && (dir = getenv(primary_var)) )               \
+            xasprintf(&ret, "%s/%s", dir, path);                        \
+        else if ( fallback_var && (dir = getenv(fallback_var)) )        \
+            xasprintf(&ret, "%s%s/%s", dir, fallback_path, path);       \
+    break;
+#include "userdirs.h"
+#undef ODK_USERDIR
+    }
+
+    return ret;
+}
+
+/**
+ * Gets the path to a file or directory under the per-user directory.
+ *
+ * This is similar to the function above, but it writes the path to a
+ * caller-provided buffer instead of allocating a new buffer.
+ *
+ * @param buffer           The buffer to store the path into.
+ * @param len              The size of the buffer.
+ * @param odk_userdir_type The type or per-user directory required.
+ * @param path The requested path.
  *
  * @return The length of the path written into the buffer. May return
  *         -1 if we were not able to obtain the directory (errno is
@@ -264,26 +304,22 @@ read_line_from_pipe(const char *command)
  *         (errno is set to ENAMETOOLONG).
  */
 int
-get_data_directory(char *buffer, size_t len, const char *name)
+get_user_path_in_buffer(char *buffer, size_t len, enum odk_userdir_type type, const char *path)
 {
     int ret = -1;
     char *dir;
 
-#if defined(ODK_RUNNER_LINUX)
-    if ( (dir = getenv("XDG_DATA_HOME")) )
-        ret = snprintf(buffer, len, "%s/%s", dir, name);
-    else if ( (dir = getenv("HOME")) )
-        ret = snprintf(buffer, len, "%s/.local/share/%s", dir, name);
-
-#elif defined(ODK_RUNNER_MACOS)
-    if ( (dir = getenv("HOME")) )
-        ret = snprintf(buffer, len, "%s/Library/Application Support/%s", dir, name);
-
-#elif defined(ODK_RUNNER_WINDOWS)
-    if ( (dir = getenv("LOCALAPPDATA")) )
-        ret = snprintf(buffer, len, "%s/%s", dir, name);
-
-#endif
+    switch ( type ) {
+#define ODK_USERDIR(dname, primary_var, fallback_var, fallback_path)            \
+    case ODK_USERDIR_##dname:                                                   \
+        if ( primary_var && (dir = getenv(primary_var)) )                       \
+            ret = snprintf(buffer, len, "%s/%s", dir, path);                    \
+        else if ( fallback_var && (dir = getenv(fallback_var)) )                \
+            ret = snprintf(buffer, len, "%s%s/%s", dir, fallback_path, path);   \
+        break;
+#include "userdirs.h"
+#undef ODK_USERDIR
+    }
 
     if ( ret >= len ) {
         errno = ENAMETOOLONG;

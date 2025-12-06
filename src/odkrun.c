@@ -181,27 +181,15 @@ set_github_token(odk_run_config_t *cfg)
 
         /* Then try to get it from the current repository... */
         token_path = "../../.github/token.txt";
+
         if ( file_exists(token_path) == -1 ) {
-            char *cfg_dir;
+            /* Then try to get it from a user-wide location. */
+            if ( (token_path = get_user_path(ODK_USERDIR_CONFIG, GH_TOKEN_FILE)) ) {
+                mr_register(NULL, token, 0);
 
-            token_path = NULL;
-
-            /* Then try to get it from a system-wide location. */
-#if defined(ODK_RUNNER_LINUX)
-            if ( (cfg_dir = getenv("XDG_CONFIG_HOME")) )
-                token_path = mr_sprintf(NULL, "%s/" GH_TOKEN_FILE, cfg_dir);
-            else if ( (cfg_dir = getenv("HOME")) )
-                token_path = mr_sprintf(NULL, "%s/.config/" GH_TOKEN_FILE, cfg_dir);
-#elif defined(ODK_RUNNER_MACOS)
-            if ( (cfg_dir = getenv("HOME")) )
-                token_path = mr_sprintf(NULL, "%s/Library/Application Support/" GH_TOKEN_FILE, cfg_dir);
-#elif defined(ODK_RUNNER_WINDOWS)
-            if ( (cfg_dir = getenv("LOCALAPPDATA")) )
-                token_path = mr_sprintf(NULL, "%s/" GH_TOKEN_FILE ".txt", cfg_dir);
-#endif
-
-            if ( file_exists(token_path) == -1 )
-                token_path = NULL;
+                if ( file_exists(token_path) == -1 )
+                    token_path = NULL;
+            }
         }
 
         if ( token_path ) {

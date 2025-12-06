@@ -96,7 +96,7 @@ get_oaklib_cache_directory(char *buffer, size_t len)
             ret = snprintf(buffer, len, "%s/" OAKLIB_NAME, dir);
         else {
             if ( (use_appdirs = getenv("PYSTOW_USE_APPDIRS")) && strcasecmp(use_appdirs, "true") == 0 )
-                ret = get_data_directory(buffer, len, OAKLIB_NAME);
+                ret = get_user_path_in_buffer(buffer, len, ODK_USERDIR_DATA, OAKLIB_NAME);
             else {    /* No PYSTOW_USE_APPDIRS */
                 if ( ! (pystow_name = getenv("PYSTOW_NAME")) )
                     pystow_name = ".data";

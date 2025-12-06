@@ -34,6 +34,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+enum odk_userdir_type {
+#define ODK_USERDIR(dname, primary_var, fallback_var, fallback_path) \
+    ODK_USERDIR_##dname,
+#include "userdirs.h"
+#undef ODK_USERDIR
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -56,8 +63,11 @@ read_file(const char *, size_t *, size_t);
 char *
 read_line_from_pipe(const char *);
 
+char *
+get_user_path(enum odk_userdir_type, const char *);
+
 int
-get_data_directory(char *, size_t, const char *);
+get_user_path_in_buffer(char *, size_t, enum odk_userdir_type, const char *);
 
 #ifdef __cplusplus
 }
