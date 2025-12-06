@@ -66,9 +66,6 @@ read_line_from_pipe(const char *);
 char *
 get_user_path(enum odk_userdir_type, const char *);
 
-int
-get_user_path_in_buffer(char *, size_t, enum odk_userdir_type, const char *);
-
 #ifdef __cplusplus
 }
 #endif

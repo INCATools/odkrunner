@@ -39,6 +39,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include <xmem.h>
+
 #include "runner.h"
 #include "util.h"
 
@@ -75,29 +77,25 @@
  *    * on Windows:      use $USERPROFILE/.data;
  *    * everywhere else: use $HOME/.data.
  *
- * @param buffer The buffer to store the path into.
- * @param len    The size of the buffer.
- *
- * @return The length of the path written into the buffer. If it is
- *         equal or greater than len, it means the buffer was too
- *         small to contain the full path. May return -1 if we were
- *         not able to obtain the user's home directory.
+ * @return A newly allocated buffer containing the path to the data
+ *         directory. May be NULL if we were not able to obtain the
+ *         user's home directory.
  */
-static int
-get_oaklib_cache_directory(char *buffer, size_t len)
+static char *
+get_oaklib_cache_directory(void)
 {
-    int ret = - 1;
+    char *ret = NULL;
     char *dir, *use_appdirs, *pystow_name;
 
     if ( (dir = getenv("OAKLIB_HOME")) )
-        ret = snprintf(buffer, len, "%s", dir);
+        ret = xstrdup(dir);
     else {
         if ( (dir = getenv("PYSTOW_HOME")) )
-            ret = snprintf(buffer, len, "%s/" OAKLIB_NAME, dir);
+            xasprintf(&ret, "%s/" OAKLIB_NAME, dir);
         else {
             if ( (use_appdirs = getenv("PYSTOW_USE_APPDIRS")) && strcasecmp(use_appdirs, "true") == 0 )
-                ret = get_user_path_in_buffer(buffer, len, ODK_USERDIR_DATA, OAKLIB_NAME);
-            else {    /* No PYSTOW_USE_APPDIRS */
+                ret = get_user_path(ODK_USERDIR_DATA, OAKLIB_NAME);
+            else {
                 if ( ! (pystow_name = getenv("PYSTOW_NAME")) )
                     pystow_name = ".data";
 
@@ -108,15 +106,13 @@ get_oaklib_cache_directory(char *buffer, size_t len)
 #endif
 
                 if ( dir )
-                    ret = snprintf(buffer, len, "%s/%s/" OAKLIB_NAME, dir, pystow_name);
+                    xasprintf(&ret, "%s/%s/" OAKLIB_NAME, dir, pystow_name);
             }
         }
     }
 
     return ret;
 }
-
-#define CACHE_PATH_MAX  2048
 
 /**
  * Configures the runner to share a host-side OAK cache directory with
@@ -134,16 +130,16 @@ int
 share_oaklib_cache(odk_run_config_t *cfg, const char *dir)
 {
     int ret = 0;
-    char cache_dir[CACHE_PATH_MAX], *dest_dir;
+    char *cache_dir, *dest_dir;
 
     dest_dir = (cfg->flags & ODK_FLAG_RUNASROOT) > 0 ? ROOT_CACHEDIR : USER_CACHEDIR;
 
     if ( strcasecmp(ODK_SHARING_OAKLIB_USER_CACHE, dir) == 0 ) {
-        if ( get_oaklib_cache_directory(cache_dir, CACHE_PATH_MAX) >= CACHE_PATH_MAX ) {
-            ret = -1;
-            errno = ENAMETOOLONG;
-        } else
+        if ( (cache_dir = get_oaklib_cache_directory()) ) {
             odk_add_binding(cfg, cache_dir, dest_dir, 0);
+            free(cache_dir);
+        } else
+            ret = -1;
     } else if ( strcasecmp(ODK_SHARING_OAKLIB_REPO_CACHE, dir) == 0 ) {
         /* Only effective when within an ODK repo, otherwise ignored. */
         if ( (cfg->flags & ODK_FLAG_INODKREPO) > 0 ) {
