@@ -41,6 +41,7 @@
 #include <err.h>
 
 #include <memreg.h>
+#include <xmem.h>
 
 #include "runner.h"
 #include "util.h"
@@ -185,8 +186,16 @@ set_github_token(odk_run_config_t *cfg)
         if ( file_exists(token_path) == -1 ) {
             /* Then try to get it from a user-wide location. */
             if ( (token_path = get_user_path(ODK_USERDIR_CONFIG, GH_TOKEN_FILE)) ) {
-                mr_register(NULL, token, 0);
-
+#if defined(ODK_RUNNER_WINDOWS)
+                /* For backward compatibility, we also look for a file
+                 * with a .txt extension. */
+                if ( file_exists(token_path) == -1 ) {
+                    size_t n = strlen(token_path);
+                    token_path = xrealloc(token_path, n + 4 + 1);
+                    strncpy(token_path + n, ".txt", 4);
+                }
+#endif
+                mr_register(NULL, token_path, 0);
                 if ( file_exists(token_path) == -1 )
                     token_path = NULL;
             }
