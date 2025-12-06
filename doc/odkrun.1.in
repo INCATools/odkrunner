@@ -27,7 +27,7 @@ odkrun - ODK Runner tool
 .RB [ -k | --oak-cache
 .IR cache ]
 .RB [ -K | --oak-user-cache ]
-.RB [ seed | command ... ]
+.RB [ seed | setup-script | command ... ]
 .YS
 
 .SH DESCRIPTION
@@ -116,6 +116,15 @@ If the first non-option (positional) argument is \fIseed\fR,
 will automatically invoke the \fIodk.py seed\fR command
 inside the container, and the rest of the arguments on the
 command line will be passed to that command.
+
+.SH SETUP SCRIPT MODE
+.PP
+If the first non-option (positional) argument is
+\fIsetup-script\fR,
+.B odkrun
+will write out a shell script that can be used to
+initialise a native ODK environment, which can then be
+invoked through the \fI--native\fR option.
 
 .SH CONFIGURATION FILE
 .PP

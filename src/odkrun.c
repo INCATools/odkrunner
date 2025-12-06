@@ -59,7 +59,7 @@ static void
 usage(int status)
 {
     puts("\
-Usage: odkrun [options] [seed|COMMAND...]\n\
+Usage: odkrun [options] [seed|setup-script|COMMAND...]\n\
 Start a ODK container.\n");
 
     puts("General options:\n\
@@ -394,6 +394,33 @@ set_max_java_mem(odk_run_config_t *cfg, long total_memory, const char *requested
 }
 
 
+/* Other helper functions. */
+
+static void
+write_setup_script(odk_run_config_t *cfg, FILE *out)
+{
+    char *basedir, *targetdir = NULL;
+
+    if ( ! (basedir = get_user_path(ODK_USERDIR_ENVS, "ontology-development-kit/images")) )
+        errx(EXIT_FAILURE, "Cannot get path to directory for local environments");
+
+    xasprintf(&targetdir, "%s/%s", basedir, cfg->image_name);
+
+    fputs("#!/bin/sh\n\n", out);
+    fputs("# Initialise Python virtual environment\n", out);
+    fprintf(out, "uv venv %s\n\n", targetdir);
+    fputs("# Activate the environment\n", out);
+    fprintf(out, ". %s/bin/activate\n\n", targetdir);
+    fputs("# Install all the Python packages\n", out);
+    fprintf(out, "uv pip install 'odk-core[workflows]'\n\n");
+    fputs("# Install the non-Python tools\n", out);
+    fprintf(out, "odk install %s\n", targetdir);
+
+    free(basedir);
+    free(targetdir);
+}
+
+
 /* Main function. */
 
 int
@@ -514,6 +541,16 @@ main(int argc, char **argv)
         cfg.flags |= ODK_FLAG_SEEDMODE;
         optind += 1;
         set_git_user(&cfg);
+    }
+
+    if ( optind < argc && strcmp("setup-script", argv[optind]) == 0 ) {
+#if defined(ODK_RUNNER_WINDOWS)
+        errx(EXIT_FAILURE, "Native environments are not supported on Windows");
+#else
+        write_setup_script(&cfg, stdout);
+        odk_free_config(&cfg);
+        return EXIT_SUCCESS;
+#endif
     }
 
     if ( backend_init(&backend) == -1 )
