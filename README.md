@@ -1,10 +1,13 @@
 ODK Runner
 ==========
 
-This is a proof-of-concept for a binary “runner” tool for the [Ontology
-Development Kit](https://github.com/INCATools/ontology-development-kit).
-That is, a program that could replace the `run.sh` and `run.bat` scripts
-used to invoke the ODK.
+This is a binary “runner” for the [Ontology Development
+Kit](https://github.com/INCATools/ontology-development-kit) (ODK). That
+is, a program that can be used to invoke ODK workflows.
+
+The runner is intended to become the recommended way of invoking ODK
+workflows, superseding the `run.sh` and `run.bat` scripts that are
+installed within every ODK-managed repository.
 
 Rationale for a binary runner
 -----------------------------
@@ -30,7 +33,7 @@ Installation (pre-compiled binaries)
 (For an installation from source, see the ”Building” section below.)
 
 From the page of the [last
-release](https://github.com/gouttegd/odkrunner/releases/latest),
+release](https://github.com/INCATools/odkrunner/releases/latest),
 download the appropriate binary for your system:
 
 * `odkrun-linux` for GNU/Linux (x86_64);
@@ -43,6 +46,12 @@ For the GNU/Linux and macOS versions, rename the downloaded binary to
 Place the binary in a directory that is listed in your system’s `PATH`
 variable. Check that you can call `odkrun --version` in a terminal and
 get the program’s version message.
+
+Installation only needs to be done once on any machine, regardless of
+how many repositories are being managed by the ODK on that machine.
+
+To upgrade to a newer version, simply download the binary for the newer
+version as above and overwrite the old binary with it.
 
 Usage
 -----
@@ -88,6 +97,65 @@ initialise a new ODK-managed repository:
 ```sh
 $ odkrun seed -C my-config.yaml [other seeding options...]
 ```
+
+ODK backends
+------------
+One benefit of the ODK Runner is to provide an abstraction layer between
+the user and several “backends” that can provide the set of tools needed
+by the ODK workflows.
+
+Currently, three different backends are supported: Docker images,
+Singularity images, and “native” environments.
+
+### Docker and Singularity
+
+Docker images are the primary backend, and the most well supported.
+That’s what the ODK Runner will use by default. The exact image used may
+be specified using the `--image` (`-i`) and `--tag` (`-t`) option; the
+default is `obolibrary/odkfull:latest`.
+
+Singularity images are in fact the same Docker images, but used through
+the [Singularity container
+platform](https://docs.sylabs.io/guides/latest/user-guide/#), rather
+than Docker. Use the `--singularity` (`-s`) option to select this
+backend. The image to use may be selected using the same `-i` and `-t`
+options as for Docker.
+
+### Native backend
+
+Native environments are currently only supported on GNU/Linux and macOS
+– and they are unlikely to ever be supported on Windows. Briefly, a
+native environment is in fact a plain directory (under
+`$XDG_DATA_HOME/ontology-development-kit/images` on GNU/Linux, or
+`$HOME/.local/share/ontology-development-kit/images` on macOS; that
+directory is hereafter called the _images directory_) that is expected
+to contain all the tools needed by ODK workflows (unless they are
+already available on the system’s `PATH`), as well as all the
+non-executable resources.
+
+Use the `--native` (`-n`) option to select the native backend. The value
+of the `--image` option is then interpreted as the name of a directory
+within the images directory. The `--tag` option is ignored with this
+backend.
+
+The ODK Runner can generate a shell script that can be used to
+automatically set up a native environment. For example, the following
+command:
+
+```sh
+$ odkrun --image myenv setup-script > setup.sh
+```
+
+will create a script to setup a native environment in
+`$XDG_DATA_HOME/ontology-development-kit/images/myenv`.
+
+Once the script has been executed, the newly created environment can be
+invoked with:
+
+```sh
+$ odkrun --image myenv --native <COMMAND...>
+```
+
 
 Building
 --------
