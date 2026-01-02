@@ -11,9 +11,14 @@ jobs:
   build_linux:
     name: Build the source distribution
     runs-on: ubuntu-latest
+    outputs:
+      odkrun_version: ${{ steps.find_version.outputs.odkrun_version }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
+      - id: find_version
+        name: Determine current version
+        run: sed -E -e 's/^AC_INIT\(\[ODK Runner\], \[(.*)\],/odkrun_version=\1/;q' configure.ac >> "$GITHUB_OUTPUT"
       - name: Generate the build system
         run: autoreconf --install
       - name: Configure the distribution
@@ -24,7 +29,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: source_dist
-          path: odkrun-0.4.1.tar.gz
+          path: odkrun-${{ steps.find_version.outputs.odkrun_version }}.tar.gz
 
   build_macos:
     name: Build for macOS
@@ -37,8 +42,8 @@ jobs:
           name: source_dist
       - name: Build
         run: |
-          tar xf odkrun-0.4.1.tar.gz
-          cd odkrun-0.4.1
+          tar xf odkrun-${{ needs.build_linux.outputs.odkrun_version }}.tar.gz
+          cd odkrun-${{ needs.build_linux.outputs.odkrun_version }}
           ./configure
           make
 
@@ -57,7 +62,7 @@ jobs:
           name: source_dist
       - name: Build
         run: |
-          tar xf odkrun-0.4.1.tar.gz
-          cd odkrun-0.4.1
+          tar xf odkrun-${{ needs.build_linux.outputs.odkrun_version }}.tar.gz
+          cd odkrun-${{ needs.build_linux.outputs.odkrun_version }}
           ./configure --host=x86_64-w64-mingw32
           make
