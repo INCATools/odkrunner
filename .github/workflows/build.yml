@@ -59,5 +59,5 @@ jobs:
         run: |
           tar xf odkrun-0.4.1.tar.gz
           cd odkrun-0.4.1
-          ./configure
+          ./configure --host=x86_64-w64-mingw32
           make
