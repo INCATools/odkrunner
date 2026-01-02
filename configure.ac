@@ -35,6 +35,14 @@ AC_ARG_WITH([min-osx-version],
             [MACOS_EXTRA_CFLAGS="$MACOS_EXTRA_CFLAGS -mmacosx-version-min=$withval"],
             [MACOS_EXTRA_CFLAGS="$MACOS_EXTRA_CFLAGS"])
 
+dnl Support for pre-1.7 ODK images
+AC_ARG_WITH([odk-executable],
+              [AS_HELP_STRING([--with-odk-executable],
+                              [Name of (of full path to) the odk script.])],
+              [],
+              [with_odk_executable="/tools/odk.py"])
+AC_DEFINE_UNQUOTED([ODK_EXECUTABLE], ["$with_odk_executable"], [Name or path of the odk script])
+
 dnl Host-based tweaks
 AC_CANONICAL_HOST
 AS_CASE([$host],

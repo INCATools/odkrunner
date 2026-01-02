@@ -99,7 +99,8 @@ run(odk_backend_t *backend, odk_run_config_t *cfg, char **command)
             argv[i++] = "### DEBUG STATS ###\nElapsed time: %E\nPeak memory: %M kb";
         }
         if ( cfg->flags & ODK_FLAG_SEEDMODE ) {
-            argv[i++] = "odk";   /* We assume the odk script is in PATH */
+            argv[i++] = "odk";   /* In native environments the odk script
+                                    should always be in the PATH. */
             argv[i++] = "seed";
         }
         for ( cursor = &command[0]; *cursor; cursor++ )

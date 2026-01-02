@@ -138,7 +138,7 @@ run(odk_backend_t *backend, odk_run_config_t *cfg, char **command)
         argv[i++] = "### DEBUG STATS ###\nElapsed time: %E\nPeak memory: %M kb";
     }
     if ( cfg->flags & ODK_FLAG_SEEDMODE ) {
-        argv[i++] = "/tools/odk.py";
+        argv[i++] = ODK_EXECUTABLE;
         argv[i++] = "seed";
     }
     for ( cursor = &command[0]; *cursor; cursor++ )
