@@ -1,0 +1,63 @@
+name: Test building the runner
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build_linux:
+    name: Build the source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+      - name: Generate the build system
+        run: autoreconf --install
+      - name: Configure the distribution
+        run: ./configure
+      - name: Build
+        run: make distcheck
+      - name: Upload source distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: source_dist
+          path: odkrun-0.4.1.tar.gz
+
+  build_macos:
+    name: Build for macOS
+    needs: build_linux
+    runs-on: macos-15
+    steps:
+      - name: Download source distribution
+        uses: actions/download-artifact@v5
+        with:
+          name: source_dist
+      - name: Build
+        run: |
+          tar xf odkrun-0.4.1.tar.gz
+          cd odkrun-0.4.1
+          ./configure
+          make
+
+  build_windows:
+    name: Build for Windows
+    needs: build_linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v3
+        with:
+          platform: x64
+      - name: Download source distribution
+        uses: actions/download-artifact@v5
+        with:
+          name: source_dist
+      - name: Build
+        run: |
+          tar xf odkrun-0.4.1.tar.gz
+          cd odkrun-0.4.1
+          ./configure
+          make
