@@ -32,6 +32,7 @@
 #define ICP20240622_BACKEND_SINGULARITY_H
 
 #include "backend.h"
+#include "procutil.h"
 
 #ifdef __cpluscplus
 extern "C" {
@@ -39,6 +40,8 @@ extern "C" {
 
 int
 odk_backend_singularity_init(odk_backend_t *);
+
+#define odk_backend_singularity_available() check_process("singularity", "--version")
 
 #ifdef __cpluscplus
 }

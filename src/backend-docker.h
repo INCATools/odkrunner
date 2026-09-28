@@ -34,6 +34,7 @@
 #include <memreg.h>
 
 #include "backend.h"
+#include "procutil.h"
 
 #ifdef __cpluscplus
 extern "C" {
@@ -44,6 +45,8 @@ odk_backend_docker_build_command(mem_registry_t *, odk_run_config_t *, char **);
 
 int
 odk_backend_docker_init(odk_backend_t *);
+
+#define odk_backend_docker_available()  check_process("docker", "--version")
 
 #ifdef __cpluscplus
 }

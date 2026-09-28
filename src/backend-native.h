@@ -40,6 +40,12 @@ extern "C" {
 int
 odk_backend_native_init(odk_backend_t *);
 
+#if !defined(ODK_RUNNER_WINDOWS)
+#define odk_backend_native_available() 1
+#else
+#define odk_backend_native_available() 0
+#endif
+
 #ifdef __cpluscplus
 }
 #endif

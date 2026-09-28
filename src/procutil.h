@@ -38,6 +38,9 @@ extern "C" {
 int
 spawn_process(char **);
 
+int
+check_process(const char *, const char *);
+
 #ifdef __cplusplus
 }
 #endif

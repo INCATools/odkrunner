@@ -43,6 +43,20 @@ AC_ARG_WITH([odk-executable],
               [with_odk_executable="/tools/odk.py"])
 AC_DEFINE_UNQUOTED([ODK_EXECUTABLE], ["$with_odk_executable"], [Name or path of the odk script])
 
+dnl Default backend
+AC_ARG_WITH([default-backend],
+            [AS_HELP_STRING([--with-default-backend],
+                            [Name of the backend to use by default. One of docker, singularity, apple, native, or none.])],
+            [],
+            [with_default_backend=docker])
+AS_CASE([$with_default_backend],
+        [docker],      [AC_DEFINE([ODK_DEFAULT_BACKEND], [odk_backend_docker_init], [Docker backend])],
+        [singularity], [AC_DEFINE([ODK_DEFAULT_BACKEND], [odk_backend_singularity_init], [Singularity backend])],
+        [apple],       [AC_DEFINE([ODK_DEFAULT_BACKEND], [odk_backend_apple_init], [Apple Container backend])],
+        [native],      [AC_DEFINE([ODK_DEFAULT_BACKEND], [odk_backend_native_init], [Native backend])],
+        [none],        [AC_DEFINE([ODK_DEFAULT_BACKEND], [NULL], [No default backend])],
+        [AC_MSG_ERROR(["Unsupported backend: ${with_default_backend}"])])
+
 dnl Host-based tweaks
 AC_CANONICAL_HOST
 AS_CASE([$host],
@@ -67,5 +81,6 @@ Configuration complete
 
 Host:               '${host}'
 Compiler:           '${CC} ${CFLAGS} ${CPPFLAGS}'
+Default backend:    '${with_default_backend}'
 
 "

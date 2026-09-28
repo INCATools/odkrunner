@@ -82,6 +82,8 @@ Start a ODK container.\n");
 ");
 
     puts("Backend options:\n\
+    -D, --docker        Run the container with Docker. This is normally\n\
+                        the default.\n\
     -s, --singulary     Run the container with Singularity rather\n\
                         than Docker (experimental).");
 #if defined(ODK_RUNNER_MACOS)
@@ -449,7 +451,7 @@ main(int argc, char **argv)
     char *opt_value, *java_mem = NULL;
     odk_run_config_t cfg;
     odk_backend_t backend = { 0 };
-    odk_backend_init backend_init = odk_backend_docker_init;
+    odk_backend_init backend_init = ODK_DEFAULT_BACKEND;
 
     struct option options[] = {
         { "help",           0, NULL, 'h' },
@@ -458,6 +460,7 @@ main(int argc, char **argv)
         { "image",          1, NULL, 'i' },
         { "tag",            1, NULL, 't' },
         { "lite",           0, NULL, 'l' },
+        { "docker",         0, NULL, 'D' },
         { "singularity",    0, NULL, 's' },
 #if defined (ODK_RUNNER_MACOS)
         { "apple",          0, NULL, 'a' },
@@ -481,7 +484,7 @@ main(int argc, char **argv)
 
     odk_init_config(&cfg);
 
-    while ( (c = getopt_long(argc, argv, "+hvdi:t:lse:k:Km:" BACKEND_OPTS,
+    while ( (c = getopt_long(argc, argv, "+hvdi:t:lse:k:Km:D" BACKEND_OPTS,
                              options, NULL)) != -1 ) {
         switch ( c ) {
         case 'h':
@@ -511,6 +514,10 @@ main(int argc, char **argv)
 
         case 'l':
             odk_set_image_name(&cfg, "obolibrary/odklite", 0);
+            break;
+
+        case 'D':
+            backend_init = odk_backend_docker_init;
             break;
 
         case 's':
@@ -583,6 +590,19 @@ main(int argc, char **argv)
         odk_free_config(&cfg);
         return EXIT_SUCCESS;
 #endif
+    }
+
+    if ( ! backend_init ) {
+        if ( odk_backend_docker_available() )
+            backend_init = odk_backend_docker_init;
+        else if ( odk_backend_singularity_available() )
+            backend_init = odk_backend_singularity_init;
+        else if ( odk_backend_apple_available() )
+            backend_init = odk_backend_apple_init;
+        else if ( odk_backend_native_available() )
+            backend_init = odk_backend_native_init;
+        else
+            errx(EXIT_FAILURE, "No backend specified");
     }
 
     if ( backend_init(&backend) == -1 )
