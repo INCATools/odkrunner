@@ -31,11 +31,16 @@
 #ifndef ICP20240622_BACKEND_DOCKER_H
 #define ICP20240622_BACKEND_DOCKER_H
 
+#include <memreg.h>
+
 #include "backend.h"
 
 #ifdef __cpluscplus
 extern "C" {
 #endif
+
+char **
+odk_backend_docker_build_command(mem_registry_t *, odk_run_config_t *, char **);
 
 int
 odk_backend_docker_init(odk_backend_t *);

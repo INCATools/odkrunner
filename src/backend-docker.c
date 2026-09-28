@@ -42,8 +42,6 @@
 #include <unistd.h> /* for getuid/getgid */
 #endif
 
-#include <memreg.h>
-
 #include "procutil.h"
 #include "util.h"
 
@@ -87,58 +85,12 @@ static int
 run(odk_backend_t *backend, odk_run_config_t *cfg, char **command)
 {
     int rc;
-    size_t n, i = 0;
-    char **argv, **cursor, *image_qualifier;
+    char **argv;
     mem_registry_t mr = { 0 };
 
     (void) backend;
 
-    image_qualifier = strchr(cfg->image_name, '/') ? "" : "obolibrary/";
-
-    /* Number of tokens in the command line */
-    n = 9 + (cfg->n_bindings * 2) + (cfg->n_env_vars * 2) + cfg->n_backend_opts;
-    if ( cfg->flags & ODK_FLAG_TIMEDEBUG )
-        n += 3;
-    if ( cfg->flags & ODK_FLAG_SEEDMODE )
-        n += 2;
-    for ( cursor = &command[0]; *cursor; cursor++ )
-        n += 1;
-
-    /* Assembling the command line */
-    argv = mr_alloc(&mr, sizeof(char *) * n);
-    argv[i++] = "docker";
-    argv[i++] = "run";
-    argv[i++] = "--rm";
-    argv[i++] = "-ti";
-    argv[i++] = "-w";
-    argv[i++] = (char *)cfg->work_directory;
-    for ( int j = 0; j < cfg->n_bindings; j++ ) {
-        argv[i++] = "-v";
-        argv[i++] = mr_sprintf(&mr, "%s:%s", cfg->bindings[j].host_directory, cfg->bindings[j].container_directory);
-    }
-    for ( int j = 0; j < cfg->n_env_vars; j++ ) {
-        if ( cfg->env_vars[j].value != NULL ) {
-            argv[i++] = "-e";
-            argv[i++] = mr_sprintf(&mr, "%s=%s", cfg->env_vars[j].name, cfg->env_vars[j].value);
-        }
-    }
-    for ( int j = 0; j < cfg->n_backend_opts; j++ )
-        argv[i++] = (char *)cfg->backend_opts[j].name;
-    argv[i++] = mr_sprintf(&mr, "%s%s:%s", image_qualifier, cfg->image_name, cfg->image_tag);
-    if ( cfg->flags & ODK_FLAG_TIMEDEBUG ) {
-        argv[i++] = "/usr/bin/time";
-        argv[i++] = "-f";
-        argv[i++] = "### DEBUG STATS ###\nElapsed time: %E\nPeak memory: %M kb";
-    }
-    if ( cfg->flags & ODK_FLAG_SEEDMODE ) {
-        argv[i++] = ODK_EXECUTABLE;
-        argv[i++] = "seed";
-    }
-    for ( cursor = &command[0]; *cursor; cursor++ )
-        argv[i++] = *cursor;
-    argv[i] = NULL;
-
-    /* Execute */
+    argv = odk_backend_docker_build_command(&mr, cfg, command);
     rc = spawn_process(argv);
     mr_free(&mr);
 
@@ -168,6 +120,60 @@ get_total_memory(odk_backend_info_t *info)
     }
 
     return ret;
+}
+
+char **
+odk_backend_docker_build_command(mem_registry_t *mr, odk_run_config_t *cfg, char **command)
+{
+    size_t n, i = 0;
+    char **argv, **cursor, *image_qualifier;
+
+    image_qualifier = strchr(cfg->image_name, '/') ? "" : "obolibrary/";
+
+    /* Number of tokens in the command line */
+    n = 9 + (cfg->n_bindings * 2) + (cfg->n_env_vars * 2) + cfg->n_backend_opts;
+    if ( cfg->flags & ODK_FLAG_TIMEDEBUG )
+        n += 3;
+    if ( cfg->flags & ODK_FLAG_SEEDMODE )
+        n += 2;
+    for ( cursor = &command[0]; *cursor; cursor++ )
+        n += 1;
+
+    /* Assembling the command line */
+    argv = mr_alloc(mr, sizeof(char *) * n);
+    argv[i++] = "docker";
+    argv[i++] = "run";
+    argv[i++] = "--rm";
+    argv[i++] = "-ti";
+    argv[i++] = "-w";
+    argv[i++] = (char *)cfg->work_directory;
+    for ( int j = 0; j < cfg->n_bindings; j++ ) {
+        argv[i++] = "-v";
+        argv[i++] = mr_sprintf(mr, "%s:%s", cfg->bindings[j].host_directory, cfg->bindings[j].container_directory);
+    }
+    for ( int j = 0; j < cfg->n_env_vars; j++ ) {
+        if ( cfg->env_vars[j].value != NULL ) {
+            argv[i++] = "-e";
+            argv[i++] = mr_sprintf(mr, "%s=%s", cfg->env_vars[j].name, cfg->env_vars[j].value);
+        }
+    }
+    for ( int j = 0; j < cfg->n_backend_opts; j++ )
+        argv[i++] = (char *)cfg->backend_opts[j].name;
+    argv[i++] = mr_sprintf(mr, "%s%s:%s", image_qualifier, cfg->image_name, cfg->image_tag);
+    if ( cfg->flags & ODK_FLAG_TIMEDEBUG ) {
+        argv[i++] = "/usr/bin/time";
+        argv[i++] = "-f";
+        argv[i++] = "### DEBUG STATS ###\nElapsed time: %E\nPeak memory: %M kb";
+    }
+    if ( cfg->flags & ODK_FLAG_SEEDMODE ) {
+        argv[i++] = ODK_EXECUTABLE;
+        argv[i++] = "seed";
+    }
+    for ( cursor = &command[0]; *cursor; cursor++ )
+        argv[i++] = *cursor;
+    argv[i] = NULL;
+
+    return argv;
 }
 
 int
