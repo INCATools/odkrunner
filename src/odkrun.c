@@ -86,12 +86,15 @@ Start a ODK container.\n");
                         than Docker (experimental).");
 #if defined(ODK_RUNNER_MACOS)
     puts("\
-        --apple         Run the container with Apple Container rather\n\
+    -a, --apple         Run the container with Apple Container rather\n\
                         than Docker (experimental).");
 #endif
+#if !defined(ODK_RUNNER_WINDOWS)
     puts("\
     -n, --native        Run in the native system, not in a container\n\
-                        (VERY experimental).\n\
+                        (VERY experimental).");
+#endif
+    puts("\
         --root          Run as a superuser within the container.\n\
 ");
 
@@ -430,6 +433,14 @@ write_setup_script(odk_run_config_t *cfg, FILE *out)
 
 /* Main function. */
 
+#if defined(ODK_RUNNER_LINUX)
+#define BACKEND_OPTS "n"
+#elif defined(ODK_RUNNER_MACOS)
+#define BACKEND_OPTS "an"
+#else
+#define BACKEND_OPTS ""
+#endif
+
 int
 main(int argc, char **argv)
 {
@@ -448,7 +459,12 @@ main(int argc, char **argv)
         { "tag",            1, NULL, 't' },
         { "lite",           0, NULL, 'l' },
         { "singularity",    0, NULL, 's' },
+#if defined (ODK_RUNNER_MACOS)
+        { "apple",          0, NULL, 'a' },
+#endif
+#if !defined (ODK_RUNNER_WINDOWS)
         { "native",         0, NULL, 'n' },
+#endif
         { "env",            1, NULL, 'e' },
         { "oak-cache",      1, NULL, 'k' },
         { "oak-user-cache", 0, NULL, 'K' },
@@ -457,9 +473,6 @@ main(int argc, char **argv)
         { "owlapi-option",  1, NULL, 257 },
         { "java-property",  1, NULL, 258 },
         { "assume-odk-repository", 0, NULL, 259 },
-#if defined (ODK_RUNNER_MACOS)
-        { "apple",          0, NULL, 260 },
-#endif
         { NULL,             0, NULL, 0 }
     };
 
@@ -468,7 +481,8 @@ main(int argc, char **argv)
 
     odk_init_config(&cfg);
 
-    while ( (c = getopt_long(argc, argv, "+hvdi:t:lsne:k:Km:", options, NULL)) != -1 ) {
+    while ( (c = getopt_long(argc, argv, "+hvdi:t:lse:k:Km:" BACKEND_OPTS,
+                             options, NULL)) != -1 ) {
         switch ( c ) {
         case 'h':
             usage(EXIT_SUCCESS);
@@ -503,9 +517,17 @@ main(int argc, char **argv)
             backend_init = odk_backend_singularity_init;
             break;
 
+#if !defined(ODK_RUNNER_WINDOWS)
         case 'n':
             backend_init = odk_backend_native_init;
             break;
+#endif
+
+#if defined(ODK_RUNNER_MACOS)
+        case 'a':
+            backend_init = odk_backend_apple_init;
+            break;
+#endif
 
         case 'k':
             odk_set_oak_cache_directory(&cfg, optarg, 0);
@@ -540,12 +562,6 @@ main(int argc, char **argv)
         case 259:
             in_odk_repo = 1;
             break;
-
-#if defined(ODK_RUNNER_MACOS)
-        case 260:
-            backend_init = odk_backend_apple_init;
-            break;
-#endif
         }
     }
 
