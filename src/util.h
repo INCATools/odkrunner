@@ -63,6 +63,9 @@ read_file(const char *, size_t *, size_t);
 char *
 read_line_from_pipe(const char *);
 
+ssize_t
+get_line(FILE *, char *, size_t);
+
 char *
 get_user_path(enum odk_userdir_type, const char *);
 

@@ -249,6 +249,54 @@ read_line_from_pipe(const char *command)
     return line;
 }
 
+/*
+ * Discards characters from the specified stream up to the next
+ * end of line.
+ */
+static int
+discard_line(FILE *f)
+{
+    int c;
+
+    while ( (c = fgetc(f)) != '\n' && c != EOF ) ;
+
+    return c == EOF ? -1 : 0;
+}
+
+/**
+ * Reads a single line from the specified stream.
+ * This function differs from standard fgets(3) in two aspects: the
+ * newline character is not stored, and if the line to read is too long
+ * to fit into the provided buffer, the whole line is discarded.
+ *
+ * @param f      The stream to read from.
+ * @param buffer A character buffer to be filled with the read line.
+ * @param len    The size of the @a buffer array.
+ *
+ * @return The number of characters read, or -1 if an error occured.
+ */
+ssize_t
+get_line(FILE *f, char *buffer, size_t len)
+{
+    int c;
+    size_t n = 0;
+
+    while ( (c = fgetc(f)) != '\n' ) {
+        if ( c == EOF )
+            return -1;
+
+        if ( n >= len -1 ) {    /* line too long */
+            discard_line(f);
+            return -1;
+        }
+
+        buffer[n++] = (char)c;
+    }
+    buffer[n] = '\0';
+
+    return n;
+}
+
 /**
  * Gets the path to a file or directory under the per-user directory.
  *
