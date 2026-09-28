@@ -82,6 +82,38 @@ close_backend(odk_backend_t *backend)
     return 0;
 }
 
+static int
+get_total_memory(odk_backend_info_t *info)
+{
+    FILE *p;
+    int ret = -1;
+
+    if ( (p = popen("container system property ls", "r")) != NULL ) {
+        char line[128];
+        ssize_t n;
+        int memory, container_section = 0;
+
+        /*
+         * Contrary to `docker info`, `container system property ls`
+         * does not allow to query an individual setting, so we need to
+         * parse the entire output.
+         */
+        while ( ! feof(p) ) {
+            if ( (n = get_line(p, line, sizeof(line))) > 0 ) {
+                if ( line[0] == '[' ) {
+                    container_section = strcmp(line, "[container]") == 0;
+                }
+                else if ( container_section && sscanf(line, "memory = \"%dgb\"", &memory) == 1 )
+                    info->total_memory = (long) memory * 1024 * 1024 * 1024;
+            }
+        }
+        pclose(p);
+        ret = 0;
+    }
+
+    return ret;
+}
+
 #endif /* ODK_RUNNER_MACOS */
 
 int
@@ -92,12 +124,14 @@ odk_backend_apple_init(odk_backend_t *backend)
     return -1;
 
 #else
+    int ret;
+
     backend->prepare = prepare;
     backend->run = run;
     backend->close = close_backend;
 
-    backend->info.total_memory = get_physical_memory();
+    ret = get_total_memory(&(backend->info));
 
-    return 0;
+    return ret;
 #endif
 }
