@@ -48,6 +48,7 @@
 #include "backend-docker.h"
 #include "backend-singularity.h"
 #include "backend-native.h"
+#include "backend-apple.h"
 #include "oaklib.h"
 #include "owlapi.h"
 #include "runconf.h"
@@ -82,7 +83,13 @@ Start a ODK container.\n");
 
     puts("Backend options:\n\
     -s, --singulary     Run the container with Singularity rather\n\
-                        than Docker (experimental).\n\
+                        than Docker (experimental).");
+#if defined(ODK_RUNNER_MACOS)
+    puts("\
+        --apple         Run the container with Apple Container rather\n\
+                        than Docker (experimental).");
+#endif
+    puts("\
     -n, --native        Run in the native system, not in a container\n\
                         (VERY experimental).\n\
         --root          Run as a superuser within the container.\n\
@@ -450,6 +457,9 @@ main(int argc, char **argv)
         { "owlapi-option",  1, NULL, 257 },
         { "java-property",  1, NULL, 258 },
         { "assume-odk-repository", 0, NULL, 259 },
+#if defined (ODK_RUNNER_MACOS)
+        { "apple",          0, NULL, 260 },
+#endif
         { NULL,             0, NULL, 0 }
     };
 
@@ -530,6 +540,12 @@ main(int argc, char **argv)
         case 259:
             in_odk_repo = 1;
             break;
+
+#if defined(ODK_RUNNER_MACOS)
+        case 260:
+            backend_init = odk_backend_apple_init;
+            break;
+#endif
         }
     }
 

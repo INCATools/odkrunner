@@ -17,6 +17,7 @@ odkrun_SOURCES = src/odkrun.c \
 		 src/backend-docker.c src/backend-docker.h \
 		 src/backend-singularity.c src/backend-singularity.h \
 		 src/backend-native.c src/backend-native.h \
+		 src/backend-apple.c src/backend-apple.h \
 		 src/owlapi.c src/owlapi.h src/owlapi-options.h \
 		 src/runconf.c src/runconf.h \
 		 src/oaklib.h src/oaklib.c \

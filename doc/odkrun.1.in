@@ -14,6 +14,7 @@ odkrun - ODK Runner tool
 .IR tag ]
 .RB [ -l | --lite ]
 .RB [ -s | --singulary ]
+.RB [ --apple ]
 .RB [ -n | --native ]
 .RB [ --root ]
 .RB [ -e | --env
@@ -64,6 +65,10 @@ Use the \fIobolibrary/odklite\fR image.
 .BR -s ", " --singularity
 Run the container with Singularity rather than Docker. This
 is experimental but should mostly work.
+.BR --apple
+Run the container with Apple Container rather than Docker.
+This is only available on macOS. This is experimental but
+should mostly work.
 .TP
 .BR -n ", " --native
 Run in the native system rather than in a container. This is
