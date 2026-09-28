@@ -13,6 +13,7 @@ odkrun - ODK Runner tool
 .RB [ -t | --tag
 .IR tag ]
 .RB [ -l | --lite ]
+.RB [ -D | --docker ]
 .RB [ -s | --singulary ]
 .RB [ --apple ]
 .RB [ -n | --native ]
@@ -62,9 +63,14 @@ Use the \fIobolibrary/odklite\fR image.
 
 .SH BACKEND OPTIONS
 .TP
+.BR -D ", " --docker
+Run the container with Docker. This is normally the default
+backend, unless specified otherwise at configure time.
+.TP
 .BR -s ", " --singularity
 Run the container with Singularity rather than Docker. This
 is experimental but should mostly work.
+.TP
 .BR --apple
 Run the container with Apple Container rather than Docker.
 This is only available on macOS. This is experimental but

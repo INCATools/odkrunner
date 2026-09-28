@@ -43,7 +43,6 @@
 #include <memreg.h>
 #include <sbuffer.h>
 
-#include "procutil.h"
 #include "util.h"
 
 #define SINGULARITY_SSH_SOCKET "/run/host-services/ssh-auth.sock"

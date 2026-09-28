@@ -42,7 +42,6 @@
 #include <unistd.h> /* for getuid/getgid */
 #endif
 
-#include "procutil.h"
 #include "util.h"
 
 #define DOCKER_SSH_SOCKET "/run/host-services/ssh-auth.sock"

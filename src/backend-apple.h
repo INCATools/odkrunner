@@ -40,6 +40,12 @@ extern "C" {
 int
 odk_backend_apple_init(odk_backend_t *);
 
+#if defined(ODK_RUNNER_MACOS)
+#define odk_backend_apple_available() check_process("container", "--version")
+#else
+#define odk_backend_apple_available() 0
+#endif
+
 #ifdef __cpluscplus
 }
 #endif

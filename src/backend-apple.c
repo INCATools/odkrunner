@@ -38,7 +38,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include "procutil.h"
 #include "util.h"
 #include "backend-docker.h"
 

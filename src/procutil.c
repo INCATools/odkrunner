@@ -116,3 +116,26 @@ spawn_process(char **argv)
 #endif
     return -1;
 }
+
+/**
+ * Spawns a process and checks that it exits with a non-error status.
+ * This is primarily intended to check whether a given command is
+ * available on the system's PATH.
+ *
+ * @param command  The command to run.
+ * @param argument A single argument for the command. May be NULL.
+ *
+ * @return A non-zero value if the process executed and returned
+ *         normally, otherwise zero.
+ */
+int
+check_process(const char *command, const char *argument)
+{
+    char *argv[3];
+
+    argv[0] = (char *)command;
+    argv[1] = (char *)argument;
+    argv[2] = NULL;
+
+    return spawn_process(argv) == 0;
+}
