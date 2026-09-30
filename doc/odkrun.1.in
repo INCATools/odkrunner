@@ -15,7 +15,7 @@ odkrun - ODK Runner tool
 .RB [ -l | --lite ]
 .RB [ -D | --docker ]
 .RB [ -s | --singulary ]
-.RB [ --apple ]
+.RB [ -a | --apple ]
 .RB [ -n | --native ]
 .RB [ --root ]
 .RB [ -e | --env
@@ -71,7 +71,7 @@ backend, unless specified otherwise at configure time.
 Run the container with Singularity rather than Docker. This
 is experimental but should mostly work.
 .TP
-.BR --apple
+.BR -a ", " --apple
 Run the container with Apple Container rather than Docker.
 This is only available on macOS. This is experimental but
 should mostly work.

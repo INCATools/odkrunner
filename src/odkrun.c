@@ -84,7 +84,7 @@ Start a ODK container.\n");
     puts("Backend options:\n\
     -D, --docker        Run the container with Docker. This is normally\n\
                         the default.\n\
-    -s, --singulary     Run the container with Singularity rather\n\
+    -s, --singularity   Run the container with Singularity rather\n\
                         than Docker (experimental).");
 #if defined(ODK_RUNNER_MACOS)
     puts("\

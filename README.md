@@ -104,22 +104,31 @@ One benefit of the ODK Runner is to provide an abstraction layer between
 the user and several “backends” that can provide the set of tools needed
 by the ODK workflows.
 
-Currently, three different backends are supported: Docker images,
-Singularity images, and “native” environments.
+Currently, four different backends are supported: Docker, Singularity,
+Apple Container, and “native” environments.
 
-### Docker and Singularity
+### Docker, Singularity, and Apple Container
 
-Docker images are the primary backend, and the most well supported.
-That’s what the ODK Runner will use by default. The exact image used may
-be specified using the `--image` (`-i`) and `--tag` (`-t`) option; the
-default is `obolibrary/odkfull:latest`.
+Docker is the primary backend, and the most well supported. Unless
+configured otherwise at build time (option `--with-default-backend`),
+that’s what the ODK Runner will use by default. With that backend, the
+set of tools is provided by a Docker image, and all workflows will run
+in an ephemeral container based on that image.
 
-Singularity images are in fact the same Docker images, but used through
-the [Singularity container
-platform](https://docs.sylabs.io/guides/latest/user-guide/#), rather
-than Docker. Use the `--singularity` (`-s`) option to select this
-backend. The image to use may be selected using the same `-i` and `-t`
-options as for Docker.
+The exact image used may be specified using the `--image` (`-i`) and
+`--tag` (`-t`) option; the default is `obolibrary/odkfull:latest`.
+
+The Singularity and Apple Container backends rely on the same Docker
+images, but used through the [Singularity container
+platform](https://docs.sylabs.io/guides/latest/user-guide/#) or the
+[Apple `container` tool](https://github.com/apple/container),
+respectively. As its name may imply, the Apple Container backend is only
+available on macOS.
+
+Use the `--singularity` (`-s`) option to select the Singularity backend,
+and the `--apple` (`-a`) option to select the Apple Container backend.
+The image to use may be selected using the same `-i` and `-t` options as
+for the Docker backend.
 
 ### Native backend
 
