@@ -15,6 +15,7 @@ odkrun - ODK Runner tool
 .RB [ -l | --lite ]
 .RB [ -D | --docker ]
 .RB [ -s | --singulary ]
+.RB [ -p | --podman ]
 .RB [ -a | --apple ]
 .RB [ -n | --native ]
 .RB [ --root ]
@@ -70,6 +71,10 @@ backend, unless specified otherwise at configure time.
 .BR -s ", " --singularity
 Run the container with Singularity rather than Docker. This
 is experimental but should mostly work.
+.TP
+.BR -p ", " --podman
+Run the container with Podman rather than Docker. This is
+experimental but should mostly work.
 .TP
 .BR -a ", " --apple
 Run the container with Apple Container rather than Docker.

@@ -46,12 +46,13 @@ AC_DEFINE_UNQUOTED([ODK_EXECUTABLE], ["$with_odk_executable"], [Name or path of 
 dnl Default backend
 AC_ARG_WITH([default-backend],
             [AS_HELP_STRING([--with-default-backend],
-                            [Name of the backend to use by default. One of docker, singularity, apple, native, or none.])],
+                            [Name of the backend to use by default. One of docker, singularity, podman, apple, native, or none.])],
             [],
             [with_default_backend=docker])
 AS_CASE([$with_default_backend],
         [docker],      [AC_DEFINE([ODK_DEFAULT_BACKEND], [odk_backend_docker_init], [Docker backend])],
         [singularity], [AC_DEFINE([ODK_DEFAULT_BACKEND], [odk_backend_singularity_init], [Singularity backend])],
+        [podman],      [AC_DEFINE([ODK_DEFAULT_BACKEND], [odk_backend_podman_init], [Podman backend])],
         [apple],       [AC_DEFINE([ODK_DEFAULT_BACKEND], [odk_backend_apple_init], [Apple Container backend])],
         [native],      [AC_DEFINE([ODK_DEFAULT_BACKEND], [odk_backend_native_init], [Native backend])],
         [none],        [AC_DEFINE([ODK_DEFAULT_BACKEND], [NULL], [No default backend])],
