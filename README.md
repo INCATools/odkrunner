@@ -107,7 +107,7 @@ by the ODK workflows.
 Currently, four different backends are supported: Docker, Singularity,
 Apple Container, and “native” environments.
 
-### Docker, Singularity, and Apple Container
+### Docker, Singularity, Podman, and Apple Container
 
 Docker is the primary backend, and the most well supported. Unless
 configured otherwise at build time (option `--with-default-backend`),
@@ -118,17 +118,22 @@ in an ephemeral container based on that image.
 The exact image used may be specified using the `--image` (`-i`) and
 `--tag` (`-t`) option; the default is `obolibrary/odkfull:latest`.
 
-The Singularity and Apple Container backends rely on the same Docker
-images, but used through the [Singularity container
-platform](https://docs.sylabs.io/guides/latest/user-guide/#) or the
-[Apple `container` tool](https://github.com/apple/container),
-respectively. As its name may imply, the Apple Container backend is only
-available on macOS.
+Several other backends are available, that rely on the same Docker
+images, but used through other containerization tools. The table below
+lists the available backends along with the command-line options that
+select them:
 
-Use the `--singularity` (`-s`) option to select the Singularity backend,
-and the `--apple` (`-a`) option to select the Apple Container backend.
-The image to use may be selected using the same `-i` and `-t` options as
-for the Docker backend.
+| Backend | Option |
+| ------- | ------ |
+| [Singularity](https://docs.sylabs.io/guides/latest/user-guide/#) | `--singularity` (`-s`) |
+| [Podman](https://podman.io/) | `--podman` (`-p`) |
+| [Apple Container](https://github.com/apple/container) | `--apple` (`a`) |
+
+As its name may imply, the Apple Container backend is only available on
+macOS.
+
+With all those backends, the image to use may be selected using the same
+`-i` and `-t` options as for the Docker backend.
 
 ### Native backend
 

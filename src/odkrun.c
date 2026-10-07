@@ -47,8 +47,9 @@
 #include "util.h"
 #include "backend-docker.h"
 #include "backend-singularity.h"
-#include "backend-native.h"
+#include "backend-podman.h"
 #include "backend-apple.h"
+#include "backend-native.h"
 #include "oaklib.h"
 #include "owlapi.h"
 #include "runconf.h"
@@ -85,6 +86,8 @@ Start a ODK container.\n");
     -D, --docker        Run the container with Docker. This is normally\n\
                         the default.\n\
     -s, --singularity   Run the container with Singularity rather\n\
+                        than Docker (experimental).\n\
+    -p, --podman        Run the container with Podman rather than\n\
                         than Docker (experimental).");
 #if defined(ODK_RUNNER_MACOS)
     puts("\
@@ -462,6 +465,7 @@ main(int argc, char **argv)
         { "lite",           0, NULL, 'l' },
         { "docker",         0, NULL, 'D' },
         { "singularity",    0, NULL, 's' },
+        { "podman",         0, NULL, 'p' },
 #if defined (ODK_RUNNER_MACOS)
         { "apple",          0, NULL, 'a' },
 #endif
@@ -484,7 +488,7 @@ main(int argc, char **argv)
 
     odk_init_config(&cfg);
 
-    while ( (c = getopt_long(argc, argv, "+hvdi:t:lse:k:Km:D" BACKEND_OPTS,
+    while ( (c = getopt_long(argc, argv, "+hvdi:t:lse:k:Km:Dp" BACKEND_OPTS,
                              options, NULL)) != -1 ) {
         switch ( c ) {
         case 'h':
@@ -522,6 +526,10 @@ main(int argc, char **argv)
 
         case 's':
             backend_init = odk_backend_singularity_init;
+            break;
+
+        case 'p':
+            backend_init = odk_backend_podman_init;
             break;
 
 #if !defined(ODK_RUNNER_WINDOWS)
@@ -597,6 +605,8 @@ main(int argc, char **argv)
             backend_init = odk_backend_docker_init;
         else if ( odk_backend_singularity_available() )
             backend_init = odk_backend_singularity_init;
+        else if ( odk_backend_podman_available() )
+            backend_init = odk_backend_podman_init;
         else if ( odk_backend_apple_available() )
             backend_init = odk_backend_apple_init;
         else if ( odk_backend_native_available() )
