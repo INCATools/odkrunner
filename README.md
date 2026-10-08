@@ -104,9 +104,6 @@ One benefit of the ODK Runner is to provide an abstraction layer between
 the user and several “backends” that can provide the set of tools needed
 by the ODK workflows.
 
-Currently, four different backends are supported: Docker, Singularity,
-Apple Container, and “native” environments.
-
 ### Docker, Singularity, Podman, and Apple Container
 
 Docker is the primary backend, and the most well supported. Unless
