@@ -42,16 +42,12 @@
 #include <unistd.h> /* for getuid/getgid */
 #endif
 
-#include "util.h"
 #include "backend-docker.h"
-
-#define PODMAN_SSH_SOCKET "/run/host-services/ssh-auth.sock"
 
 static int
 prepare(odk_backend_t *backend, odk_run_config_t *cfg)
 {
-    int ret = 0;
-    char *ssh_socket;
+    (void) backend;
 
     if ( (cfg->flags & ODK_FLAG_RUNASROOT) == 0 ) {
 #if defined(ODK_RUNNER_LINUX)
@@ -66,13 +62,7 @@ prepare(odk_backend_t *backend, odk_run_config_t *cfg)
         odk_add_env_var(cfg, "ODK_GROUP_ID", group_id, 0);
     }
 
-    if ( (ssh_socket = getenv("SSH_AUTH_SOCK")) &&
-            file_exists(ssh_socket) == 0 ) {
-        odk_add_env_var(cfg, "SSH_AUTH_SOCK", PODMAN_SSH_SOCKET, 0);
-        ret = odk_add_binding(cfg, ssh_socket, PODMAN_SSH_SOCKET, 0);
-    }
-
-    return ret;
+    return 0;
 }
 
 static int
